@@ -8,6 +8,7 @@ return {
         'lua',
         'javascript',
         'typescript',
+        'jsdoc',
         'html',
         'rust',
       },
