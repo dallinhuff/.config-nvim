@@ -118,7 +118,7 @@ return {
 
     local servers = {
       rust_analyzer = {},
-      ts_ls = {},
+      vtsls = {},
       lua_ls = {
         settings = {
           Lua = {
