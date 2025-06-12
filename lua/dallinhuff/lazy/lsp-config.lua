@@ -1,11 +1,10 @@
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
-    { 'williamboman/mason.nvim', opts = {} },
-    'williamboman/mason-lspconfig.nvim',
+    { 'mason-org/mason.nvim', opts = {} },
+    'mason-org/mason-lspconfig.nvim',
     'WhoIsSethDaniel/mason-tool-installer.nvim',
     { 'j-hui/fidget.nvim', opts = {} },
-    'hrsh7th/cmp-nvim-lsp',
   },
   config = function()
     vim.api.nvim_create_autocmd('LspAttach', {
@@ -16,24 +15,25 @@ return {
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
-        map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-        map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+        map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+        map('g.', vim.lsp.buf.code_action, 'Code Action', { 'n', 'x' })
+        map('gA', require('telescope.builtin').lsp_references, '[G]oto [A]ll references')
         map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-        map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-        map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-        map(
-          '<leader>ws',
-          require('telescope.builtin').lsp_dynamic_workspace_symbols,
-          '[W]orkspace [S]ymbols'
-        )
-        map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-        map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+        map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+        map('gy', require('telescope.builtin').lsp_type_definitions, '[G]oto T[y]pe definition')
+        map('gO', require('telescope.builtin').lsp_document_symbols, '[O]pen document symbols')
+        map('gW', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace symbols')
 
+        ---@param client vim.lsp.Client
+        ---@param method vim.lsp.protocol.Method
+        ---@param bufnr? integer
+        ---@return boolean
         local function client_supports_method(client, method, bufnr)
           if vim.fn.has 'nvim-0.11' == 1 then
             return client:supports_method(method, bufnr)
           else
+            ---@diagnostic disable-next-line
             return client.supports_method(method, { bufnr = bufnr })
           end
         end
@@ -112,41 +112,59 @@ return {
       },
     }
 
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities =
-      vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
+    ---@class LspServersConfig
+    ---@field mason table<string, vim.lsp.Config>
+    ---@field others table<string, vim.lsp.Config>
     local servers = {
-      rust_analyzer = {},
-      vtsls = {},
-      lua_ls = {
-        settings = {
-          Lua = {
-            completion = {
-              callSnippet = 'Replace',
+      mason = {
+        lua_ls = {
+          settings = {
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
+              },
             },
           },
         },
+
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              check = {
+                command = 'clippy',
+              },
+              diagnostics = {
+                enabled = true,
+              },
+            },
+          },
+        },
+
+        vtsls = {},
       },
+
+      others = {},
     }
 
-    local ensure_installed = vim.tbl_keys(servers or {})
+    local ensure_installed = vim.tbl_keys(servers.mason or {})
     vim.list_extend(ensure_installed, {
       'stylua',
     })
     require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+    for server, config in pairs(vim.tbl_extend('keep', servers.mason, servers.others)) do
+      if not vim.tbl_isempty(config) then
+        vim.lsp.config(server, config)
+      end
+    end
+
     require('mason-lspconfig').setup {
       ensure_installed = {},
-      automatic_installation = false,
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          server.capabilities =
-            vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          require('lspconfig')[server_name].setup(server)
-        end,
-      },
+      automatic_enable = true,
     }
+
+    if not vim.tbl_isempty(servers.others) then
+      vim.lsp.enable(vim.tbl_keys(servers.others))
+    end
   end,
 }
