@@ -25,6 +25,7 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+-- load plugins from /lazy directory
 require('lazy').setup {
   spec = 'dallinhuff.lazy',
   checker = { enabled = true },

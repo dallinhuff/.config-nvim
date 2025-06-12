@@ -1,10 +1,13 @@
+-- Set to true if using a NerdFont
 vim.g.have_nerd_font = false
 
 vim.o.number = true
 vim.o.relativenumber = true
 
+-- Enable "mouse mode" to allow some mouse interactions.
 vim.o.mouse = 'a'
 
+-- Don't show mode, since I use Lualine and it already shows the mode
 vim.o.showmode = false
 
 vim.o.breakindent = true
@@ -22,28 +25,12 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- Render whitespace characters
 vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
+-- Preview substitutions live
 vim.o.inccommand = 'split'
 
+-- Minimum number of lines to keep above/below the current line
 vim.o.scrolloff = 10
-
-vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-})
-
--- Ensure the file ends with a blank line
-vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*',
-  callback = function()
-    local line = vim.fn.getline '$'
-    if line ~= '' then
-      vim.fn.append(vim.fn.line '$', '')
-    end
-  end,
-})
