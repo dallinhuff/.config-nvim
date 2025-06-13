@@ -7,13 +7,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Ensure the file ends with a blank line
-vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*',
-  callback = function()
-    local line = vim.fn.getline '$'
-    if line ~= '' then
-      vim.fn.append(vim.fn.line '$', '')
-    end
-  end,
-})
+-- -- Ensure the file ends with a blank line
+-- vim.api.nvim_create_autocmd('BufWritePre', {
+--   pattern = '*',
+--   callback = function()
+--     local line = vim.fn.getline '$'
+--     if line ~= '' then
+--       vim.fn.append(vim.fn.line '$', '')
+--     end
+--   end,
+-- })
