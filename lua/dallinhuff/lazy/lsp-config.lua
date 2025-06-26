@@ -139,8 +139,6 @@ return {
             },
           },
         },
-
-        vtsls = {},
       },
 
       others = {},
