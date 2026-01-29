@@ -34,3 +34,6 @@ vim.o.inccommand = 'split'
 
 -- Minimum number of lines to keep above/below the current line
 vim.o.scrolloff = 10
+
+vim.o.shiftwidth = 4
+vim.o.tabstop = 4
